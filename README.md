@@ -40,6 +40,7 @@ Click on any poster preview to open the full PDF version.
 | **Amer Nermeen** | <a href="Posters/Amer_Nermeen.pdf"><img src="Posters/Amer_Nermeen.jpg" width="130" /></a> |
 | **Angela Carfora** | <a href="Posters/Angela_Carfora.pdf"><img src="Posters/Angela_Carfora.jpg" width="130" /></a> |
 | **Bastos Lucas** | <a href="Posters/Bastos_Lucas.pdf"><img src="Posters/Bastos_Lucas.jpg" width="130" /></a> |
+| **Banerjee Ruma** |<a href="Posters/Banerjee_Ruma.pdf"><img src="Posters/Banerjee_Ruma.jpg" width="130" /></a> |
 | **Burton Jack** | <a href="Posters/Burton_Jack.pdf"><img src="Posters/Burton_Jack.jpg" width="130" /></a> |
 | **Diethelm Etienne** | <a href="Posters/Diethelm_Etienne.pdf"><img src="Posters/Diethelm_Etienne.jpg" width="130" /></a> |
 | **Fornasiero Alice** | <a href="Posters/Fornasiero_Alice.pdf"><img src="Posters/Fornasiero_Alice.jpg" width="130" /></a> |
@@ -54,6 +55,7 @@ Click on any poster preview to open the full PDF version.
 | **Sakhi Kundu** | <a href="Posters/Sakhi_Kundu.pdf"><img src="Posters/Sakhi_Kundu.jpg" width="130" /></a> |
 | **Sebastianelli Matteo** | <a href="Posters/Sebastianelli_Matteo.pdf"><img src="Posters/Sebastianelli_Matteo.jpg" width="130" /></a> |
 | **Tommasi Anna** | <a href="Posters/Tommasi_Anna.pdf"><img src="Posters/Tommasi_Anna.jpg" width="130" /></a> |
+| **Wangmo Lenrik** | <a href="Posters/Wangmo_Lenrik.pdf"><img src="Posters/Wangmo_Lenrik.jpg" width="130" /></a> |
 ---
 ### Organized by:
 
