@@ -1,0 +1,953 @@
+---
+title: "Basic Statistics"
+author: "Oscar Lao"
+date: "2026-01-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+
+## Exercise 1. Describing a distribution by means of summary statistics
+
+A distribution can be matemathically defined by statistics that account for how similar are the values of the distribution ("centrality statistics"), for how different they are ("dispersion statistics"), for how is the shape of the distribution ("skewness", "multimodality", "symmetry", etc). How many centrality statistics and dispersion statistics could you define? Discuss it with your colleagues
+
+How would you compute them?
+
+How would you compute the skewness (negative, or left tail, positive or right tail)? Discuss it with your colleagues for 5 minutes. 
+
+Imagine you have a variable x for which you have 1000 observations. Compute the different centrality and dispersion statistics you have found.
+
+```{r, echo=FALSE}
+rm(list = ls());
+x <- rgamma(1000, 2, 2);
+# check always how it visually looks (we will discuss later what does this mean)
+hist(x);
+# how does the data look like? Is it bell shaped? Is it symmetric?
+
+
+# Compute statistics of centrality
+
+# Compute statistics of dispersion
+
+# provide a estimation of skewness
+
+
+```
+
+For each centrality statistic, there can be different definitions. For example, mean can be weighted, can be robust (Tukey's trimean), etc.
+
+A weighted mean is computed by multiplying each value by a weight. The sum of weights must add to one and each weight must be between 0 and 1.
+
+When do you think one would like to use weighted mean?
+
+
+```{r}
+# Implement the weighted mean with the previous example. Assume that the weights you have are these:
+
+w <- abs(rnorm(1000, 0, 1));
+
+# do all the transformations of the weights you think are required
+
+w_transformed <- w/sum(w);
+
+# Compute the weighted mean
+sum(x*w)
+
+mean(x)
+
+# in fact, the normal mean is a SPECIAL case of the weighted mean, when each observation has a weight of 1/n
+  
+# Compare the weighted with the unweighted mean.  
+```
+
+
+Robust statistics are statistics that are less influenced by the large magnitude of single points. Tukeys trimean is computed as (Q1 + 2*Q2 + Q3)/4, where Q1, Q2 and Q3 are the 1rst, 2nd and 3rt quantile. Using as example x and BEFORE you compute it, decide whether the mean will be larger or smaller than Tukey's trimean. Why did you reach such conclusion?
+
+
+```{r}
+
+# mean of x
+
+mean(x);
+
+# compute tukeys trimean
+
+trimean <- function(x)
+{
+  Q <- quantile(x, probs = c(0.25,0.5,0.75));
+  return((Q[1] + 2*Q[2] + Q[3])/4)
+  # your code here
+}
+
+trimean(x);
+
+
+```
+
+This exercise bring us to the concept of "outlier", which is intimately related to the concept of dispersion statistics. Outliers are points whose magnitude is much larger or smaller than the bulk of observed points. Outliers can appear by different processes: errors when measuring the observation, mixing observations coming from different processes, not enough samples (so we believe they are outliers when they are not), etc.
+
+
+## Exercise 2. Describing the whole shape of the distribution
+
+A histogram is a graphical summary of the entire distribution's shape. It visually organizes a dataset by dividing the range of data into equal, consecutive intervals (called bins) and plotting the frequency or count of data points that fall into each bin. A histogram depends on design choices such as the number or width of bins. Check the help of hist (?hist). Try different breaks with x. Is the histogram shape the same? In AI, a parameter that is required in order to run an algorithm is called hyperparameter and can have a huge effect on the final result.
+
+```{r}
+hist(x, breaks = "Scott")
+hist(x)
+```
+
+This shows that many algorithms can be sensitive to hyperparameter choices.
+
+We can also interpolate the frequency of the distribution at a given point by considering a density model. Check ?density. Which kernel models can be applied? Which bandwidths? Try different configurations and see what happens. Notice whether the kernel type or the bandwidth has the strongest effect.
+
+```{r}
+plot(density(x, kernel = "epanechnikov"))
+
+```
+This shows again the importance of hyperparameters, in particular when the number of observations is small.
+
+Which is the best model configuration? Discuss it with other students.
+
+It also shows another issue. In the density plot, did you notice something strange? Which is the minimum value of the observations? Which is the minimum value interpolated by the kernel?
+
+Data transformation.
+
+Imagine our data can only range between [a, b]. How could we generate a density plot that is NOT out of this range?
+
+```{r}
+
+x <- runif(100, 1, 5);
+
+# step 1. Rescale x, so it ranges between 0 and 1
+
+x.scaled <- (x-1)/(5-1);
+
+# logit transformation
+
+z.variable <- log(x.scaled/(1-x.scaled));
+
+# z.variable ranges between -infinite and infinite
+
+plot(density(x));
+plot(density(z.variable));
+
+```
+
+
+## Exercise 3. Probability & density. Statistical models
+
+Histograms and Statistical models define the distribution of the observed data. We will consider unary distributions because it is more easy to visualize, but a distribution can be perfectly multidimensional.
+
+Imagine x is the next dataset.
+
+```{r}
+rm(list=ls());
+x <- rbinom(1000,10,0.2)
+hist(x)
+```
+
+Which is the frequency of each possible value in the dataset?
+
+```{r}
+table(x)/length(x)
+```
+We see that the values of the dataset are integers, ranging from 0 to 7. For each number, we can compute how often we observe it -> probability & probability distribution function. Values in the probability distribution function range between 0 and 1 ([0,1]) and all of them must add to one.
+
+Repeat the same experiment, but with a continuous variable that comes from a normal distribution
+
+```{r}
+rm(list = ls());
+x <- rnorm(10,0,1)
+hist(x)
+table(x)/length(x)
+
+```
+
+Each value in the sample has the same frequency. Why? 
+
+Apply a break over transects and check how many observations are in each break.
+
+```{r}
+h <- hist(x);
+h$density
+```
+There are regions in the space of observations which are more frequent (there are places that are more dense in points) than others, yet each value has the same frequency -> we talk of density & probability DENSITY function. Values in probability DENSITY function can be above 1:
+
+```{r}
+rm(list=ls());
+hist(runif(1000,0,0.5))
+# density at observation 0.5
+dunif(0.5,0,0.5)
+```
+
+Why is 2?. For each probability function we force that the area adds to 1.
+If the area of a uniform distribution between 0 and 0.5 is 1, then the height must be 2. Do not mix probability with density!
+
+How do we interpret density values?
+
+```{r}
+rm(list=ls());
+dnorm(0,0,1)/dnorm(1,0,1)
+```
+We talk about ratios.
+
+
+# Exercise 4. Some properties of the binomial distribution and probability concepts (kindly borrowed from Leo Speidel)
+
+The coin toss is one of the most standard experiments in probability and on a fundamental level many evolutionary processes can be modelled as coin tosses.
+a) Let’s assume we have a coin that shows heads with probability 0.6 and tails with probability 0.4. Heads wins you €1, tails wins you nothing. What is your expected return after 1 coin toss?
+
+```{r}
+
+############################################################
+# Exercise: Coin tosses and Wright-Fisher model
+############################################################
+
+rm(list = ls())
+
+############################################################
+# a) One coin toss
+############################################################
+
+# Probability of heads
+p <- 0.6
+
+# Reward:
+# Heads = 1 euro
+# Tails = 0 euro
+
+# Expected return
+expected.return.1 <- 1 * p + 0 * (1 - p)
+
+expected.return.1
+```
+
+
+b) Now assume you make 5 coin tosses. What is the probability of winning €0 and €5,
+repectively? What is the expected return? Draw a rough plot with possible returns on the x-axis and probability on the y-axis. In R, calculate the probabilities using the function dbinom(x, size = 5, p = 0.6) and compare with your intuition.
+
+```{r}
+
+############################################################
+# b) Five coin tosses
+############################################################
+
+# Number of tosses
+n <- 5
+
+# Possible number of wins
+x <- 0:n
+
+# Binomial probabilities
+probabilities <- dbinom(x, size = n, p = p)
+
+# Probability of winning 0 euros
+prob.0 <- dbinom(0, size = n, p = p)
+
+# Probability of winning 5 euros
+prob.5 <- dbinom(5, size = n, p = p)
+
+prob.0
+prob.5
+
+# Expected return
+expected.return.5 <- n * p
+
+expected.return.5
+
+# Plot probabilities
+plot(x,
+     probabilities,
+     type = "h",
+     lwd = 4,
+     xlab = "Return in euros",
+     ylab = "Probability",
+     main = "Distribution of returns after 5 tosses")
+
+points(x, probabilities, pch = 16)
+```
+
+
+c) Assume you have a constant number of N individuals in every generation, and offspring choose a random parent in each generation (Figure 1). This is known as the Wright-Fisher model. By thinking of the process of offspring choosing a parent as a coin toss, calculate the expected number of offspring of a parent. What is the distribution of the number of offspring of a parent?
+
+```{r}
+############################################################
+# c) Wright-Fisher model
+############################################################
+
+# Population size
+N <- 100
+
+# Each offspring chooses one parent randomly
+# Probability a given parent is chosen:
+p.parent <- 1 / N
+
+# Expected number of offspring
+expected.offspring <- N * p.parent
+
+expected.offspring
+
+# Distribution of offspring number:
+# Binomial(N, 1/N)
+
+offspring.values <- 0:N
+
+offspring.prob <- dbinom(offspring.values,
+                         size = N,
+                         prob = p.parent)
+
+# Plot offspring distribution
+plot(offspring.values,
+     offspring.prob,
+     type = "h",
+     lwd = 3,
+     xlab = "Number of offspring",
+     ylab = "Probability",
+     main = "Wright-Fisher offspring distribution")
+```
+
+
+d) Going back to the coin toss, if p = 0.5, can you make a guess on the expected number of tosses until you get the first heads? How would it change if p = 0.1? In R, use the function rgeom(n=100, prob = 0.5) to sample 100 times from the geometric distribution and compute the arithmetic mean. Compare with your intuition.
+
+```{r}
+
+############################################################
+# d) Waiting time until first heads
+############################################################
+
+# Case 1: p = 0.5
+p1 <- 0.5
+
+# Simulate from geometric distribution
+# rgeom counts failures before first success
+samples.p1 <- rgeom(n = 100, prob = p1)
+
+# Arithmetic mean
+mean(samples.p1)
+
+# Expected number of tosses until first heads
+# Add 1 because geometric counts failures
+expected.tosses.p1 <- 1 / p1
+
+expected.tosses.p1
+
+
+# Case 2: p = 0.1
+p2 <- 0.1
+
+samples.p2 <- rgeom(n = 100, prob = p2)
+
+mean(samples.p2)
+
+expected.tosses.p2 <- 1 / p2
+
+expected.tosses.p2
+```
+
+e) For any two individuals, the probability to choose the same parent in the previous generation is 1/N (the first individual chooses a parent, the second individual chooses the same parent with probability 1/N). How many generations will it take on average for two individuals to coalesce, i.e. for their ancestors to choose the same parent? In humans, N ≈ 20, 000. Assuming a generation time of 28 years, what is the expected number of years to the most recent common ancestor?
+
+```{r}
+
+############################################################
+# e) Time to coalescence
+############################################################
+
+# Population size
+N <- 20000
+
+# Probability of coalescence in one generation
+p.coal <- 1 / N
+
+p.coal
+
+# Expected generations until coalescence
+expected.generations <- 1 / p.coal
+
+expected.generations
+
+# Generation time in years
+generation.time <- 28
+
+# Expected years to common ancestor
+expected.years <- expected.generations * generation.time
+
+expected.years
+```
+
+A general (silly) backward simulator, where we store the time of the most recent common ancestor (TMRCA):
+```{r}
+library(ggplot2);
+rm(list=ls());
+# A very silly way of doing it, as we are moving backward generation after generation.
+tmrca <- function(Ne, l)
+{
+  tmrca <- rep(NA,l);
+  for(i in 1:l)
+  {
+    g = 1;
+    while(sample(Ne,1)!=sample(Ne,1))
+    {
+      g = g+1;
+    }
+    tmrca[i] <- g;
+  }
+  return(tmrca);
+}
+
+# run it with Ne = 100 and Ne = 1000 on 5000 loci. Plot the log(TMRCA) of both. What is happening?
+
+ne100 <- log(tmrca(100,5000));
+ne1000 <- log(tmrca(1000,5000));
+df <- data.frame(logTMRCA = c(ne100,ne1000), model = c(rep("ne100",length(ne100)),rep("ne1000",length(ne1000))))
+
+ggplot(df, aes(x=logTMRCA, color=model)) +
+  geom_density()
+
+
+# can you think a way more efficient of sampling this?
+
+# Exact efficient solution: use a geometric distribution
+# If T is the number of generations until first coalescence and each generation is an independent “success” with probability 1/Ne1, then
+# T∼Geometric(p=1/Ne)
+# depending on convention:
+
+ne100 =log(rgeom(5000,1/100)+1)
+ne1000 =log(rgeom(5000,1/1000)+1)
+
+df <- data.frame(logTMRCA = c(ne100,ne1000), model = c(rep("ne100",length(ne100)),rep("ne1000",length(ne1000))))
+
+ggplot(df, aes(x=logTMRCA, color=model)) +
+  geom_density()
+
+```
+
+# Exercise 5. The Central Limit Theorem
+
+We can think that if we repeat the same experiment 5000 times, the value of the statistic computed from the observed data will not always be the SAME in the observed data, but it will fluctuate a bit around the parametric value. This leads to the concept of uncertainty of an estimated parameter from the data. Imagine we want to estimate the mean of the Platonic distribution. In the case of the mean estimated of a sample, it tends to show a particular distribution of values.
+
+```{r}
+rm(list = ls());
+# Imagine we have 5000 different datasets, each of 1000 samples generated from a beta distribution with shape1 = 1 and shape2 = 2. Each dataset is not normal (it follows a beta distribution).
+means <- rep(0, 5000);
+for(re in 1:length(means))
+{
+  means[re] <- mean(rbeta(1000, 1, 2));
+}
+# the distribution of the mean FOLLOWS a normal distribution
+hist(means, 
+     prob = TRUE, # This is the crucial step!
+     main = "Sampling Distribution of the Mean", 
+     xlab = "Means", 
+     col = "lightgray")
+
+# 2. Add the normal curve
+curve(dnorm(x, mean = mean(means), sd = sd(means)), 
+      col = "red",  # Makes the line red
+      lwd = 2,      # Makes the line slightly thicker
+      add = TRUE)   # Tells R to add this to the existing plot
+
+```
+This plot describes the histogram of the mean of each of the sampled datasets, each following a beta distribution. The mean of the sampled datasets from a beta distribution tends to look bell shaped. Notice that the histogram of each of these datasets does not look like a bell shaped at all!
+
+```{r}
+hist(rbeta(1000, 1, 2));
+
+```
+What are we observing and how can we use this information when estimating the uncertainty of the mean estimated from a single dataset?
+
+For example, we can approximate the number of expected heads in a coin to a normal distribution with parameters mean = n*p and standard deviation n*p*(1-p) when n*p > 10.
+
+```{r}
+# 1. Create the histogram, ensuring the y-axis is a probability scale
+hist(rbinom(10000, 100, 0.5), 
+     prob = TRUE,   # This is the necessary fix!
+     main = "Binomial Distribution vs. Normal Approximation",
+     xlab = "Number of Heads",
+     col = "lightblue")
+
+# 2. Add the normal curve
+curve(dnorm(x, mean = (100 * 0.5), sd = (100 * 0.25)^0.5), 
+      col = "red",  # Makes the line red
+      lwd = 2,      # Makes the line slightly thicker
+      add = TRUE)   # Tells R to add this to the existing plot
+
+```
+
+How can be this information used?
+
+Given the observed value of frequency in a sample, from which values could it range in the Platonic model?
+
+What happens if n*p < 10?
+
+```{r}
+# repetitions of 10000 datasets, counting at each dataset the number of heads
+hist(rbinom(10000,3,0.5))
+
+```
+
+# Exercise 6. A forward simulator of the allelic frequency using what we have learned so far 
+
+A Wright-Fisher forward simulator of the allelic frequency over time can be created by sampling from a binomial distribution Ne chromosomes given the current frequency p of the allele we are simulating. Imagine an allele at frequency 0.5 in a population of Ne = 1000. Simulate the change in allelic frequency over the next 100 generations.
+
+```{r}
+rm(list=ls());
+
+fnext_generation <- function(f_in_current_generation, Ne)
+{
+  return(rbinom(1,Ne,f_in_current_generation)/Ne);
+}
+
+fr <- rep(NA,100);
+f_in_current_generation <- 0.5;
+Ne <- 1000;
+
+for(g in 1:length(fr))
+{
+  fr[g] <- fnext_generation(f_in_current_generation, Ne);
+  f_in_current_generation <- fr[g];
+}
+plot(fr, type = "l");
+```
+
+Lets take the shorcut of the Normal approximation
+
+```{r}
+rm(list=ls());
+Ne <- 1000
+p <- 0.5;
+mean.norm <- Ne*p;
+sd.norm <- (Ne*p*(1-p))^0.5
+fr <- rep(NA,100);
+for(g in 1:length(fr))
+{
+  fr[g] <- rnorm(1,mean.norm,sd.norm)/Ne;
+  p <- fr[g];
+  mean.norm <- Ne*p;
+  sd.norm <- (Ne*p*(1-p))^0.5
+}
+plot(fr, type = "l");
+
+```
+
+For large population sizes, the Wright–Fisher process can be approximated by a diffusion process related to Brownian motion, where the next value only depends on the previous one. Thanks to this approximation, Cavalli-Sforza and Boedmer derived a set of statistics and predictions on the evolution of the frequency of an allele.
+
+The approximation works fine as far as n*p is > 10 and n(1−p)>10.
+
+
+# Exercise 7. Maximum likelihood
+
+Model (Platonic if you want) probability distributions are mathematical constructs defined by a formula. The area defined by this formula must add to 1 for all the points in the domain of the probability distribution and the density of each point must be non-negative. From a mathematical point of view, observed datasets are "sampled" from these ideal distributions.
+
+The density formula is defined by parameters. Sometimes, we can make direct sense of these parameters. For example, the parameters required to run a Normal distribution are in fact the mean and the standard deviation. In other cases, mean and standard deviation are not direct parameters but can be extracted from the parameters. 
+
+Check ?dbeta. 
+
+Which is the domain of this distribution? Which are the parameters of that distribution? Change them and see what happens when you sample 1000 points from that distribution.
+
+```{r}
+rm(list=ls());
+x <- rbeta(1000,1,2);
+hist(x)
+```
+
+In order to estimate the mean from that ideal distribution, we can take advantage of the definition of weighted mean:
+
+integrate pdf(x)*x over all the points of the domain
+
+For a beta distribution, parametric mean is:
+
+shape1 /(shape1 + shape2)
+
+Since in reality we have OBSERVED data, the estimated mean is not the parametric mean of the distribution that generated it. Ideally, we would like to infer the parameters of the Platonic distribution from the observed data.
+
+Imagine shape2 is fixed to 2, and we want to infer which is the shape1. Observed data x are 1000 values (real shape1 is 4)
+
+```{r}
+rm(list=ls());
+x <- rbeta(1000,4,2);
+hist(x);
+
+```
+
+How could you estimate the value of the parameter shape1?
+
+Create a grid of values of shape1 ranging from 0 to 10, with a space of 0.1.
+
+For each value of shape1, evaluate the log-density of each observed data point under each parameter value, and add them. This is an estimation of the likelihood of the observed data under each parameter value. Plot the shape1 values against the loglikelihood.
+
+```{r}
+# shape1 must be positive (cannot be 0!)
+shape1 <- seq(from=0.01, to = 10, by = 0.1);
+like <- rep(NA,length(shape1));
+for(s in 1:length(shape1))
+{
+  like[s] <- sum(dbeta(x,shape1[s],2,log=TRUE));
+}
+plot(shape1,like);
+shape1[like==max(like)]
+
+```
+
+Clearly, this is not the most efficient way, particularly if your distribution is complex. We must look for heuristic methods that efficiently explore the space of possibilities. For example, EM algorithm, metaheuristic algorithms, etc...
+
+```{r}
+# example of a metaheuristic algorithm inspired in evolution: Evolutionary Strategy
+
+# We define a population of possible solutions to our problem. In this case, values of shape1
+
+pop.shape1 <- runif(100, 0, 20);
+
+# for each of the proposed solutions, we estimate the likelihood
+likelihood <- function(shape)
+{
+  return(sum(dbeta(x,shape,2,log=TRUE)));
+}
+
+L <- sapply(pop.shape1, likelihood);
+
+# At each iteration, we pick at random one of the so far proposed solutions. We create a new solution by modifying a bit the value of that solution and check its likelihood for explaining observed data. If the likelihood is better than the worse solution of the current population, replace the last solution with the new one.
+
+most.likely.shape <- rep(NA,10000);
+
+for(iteration in 1:length(most.likely.shape))
+{
+# pick one element of pop.shape1 at random. Propose a change given the current value
+  i <- sample(length(L),1);
+  # propose a new 
+  new.shape.would.be <- max(0,rnorm(1,pop.shape1[i],0.1));
+  new.likelihood.would.be <- likelihood(new.shape.would.be);
+  min.likelihood.in.population <- min(L);
+  if(new.likelihood.would.be > min.likelihood.in.population)
+  {
+    pop.shape1[L==min(L)] <- new.shape.would.be;
+    L[L==min(L)] <- new.likelihood.would.be;
+  }
+# which is the value with the maximum likelihood so far found in my population?  
+  most.likely.shape[iteration] <- pop.shape1[L==max(L)];
+}
+
+plot(most.likely.shape);
+
+# most likely value of shape is
+
+most.likely.shape[length(most.likely.shape)]
+
+```
+
+# Exercise 8. Bayesian statistics
+
+Imagine we have recorded 100 observations and we assume these observations come from a normal distribution with parametric sd = 1. We want to estimate the posterior distribution of the value of the parametric mean given the observed values and the fact that we have a prior knowledge. This previous knowledge states that the mean of this normal distribution follows a prior distribution that is a logistic distribution with parameters location = 5, scale = 10.
+
+The posterior of the mean is defined as
+
+P(mean | Data) = P(mean)*P(Data | mean)/P(Data)
+
+P(Data) is a scaling factor so P(mean | Data) behaves as a probability distribution function. The area of the distribution must add to one. Therefore, we can say that: 
+
+P(Data) = integrate_over_all(P(mean)*P(Data | mean))
+
+Whenever the integration is not possible, we have a problem. Posterior distribution can be sampled using MCMC approaches. Lets use the Metropolis algorithm
+
+```{r}
+
+# how does a gamma distribution with parameters shape = 2, scale = 2 looks like?
+
+hist(rlogis(10000,5,10));
+
+# our data comes from
+
+mean <- 3;
+sd <- 1;
+
+Data <- rnorm(100, mean, sd);
+
+hist(Data);
+
+# We want to recover the mean of this normal distribution
+
+loglike <- function(m)
+{
+  return(dlogis(m,5,10,log=T) + sum(dnorm(Data, m,sd,log=T)));
+}
+
+# metropolis algorithm
+
+metropolis <- function(cmean)
+{
+# propose a new value of the mean
+  nmean <- rnorm(1, cmean, 0.5);
+  # likelihood of the previous mean and the new mean
+  log_like_nmean <- loglike(nmean);
+  log_like_cmean <- loglike(cmean);
+  ratio <- log_like_nmean-log_like_cmean;
+  if(ratio > 0)
+  {
+    return(c(nmean, log_like_nmean));
+  }
+  if(log(runif(1,0,1)) <= ratio)
+  {
+    return(c(nmean, log_like_nmean));
+  }
+    return(c(cmean, log_like_cmean));
+}
+
+# Iterate getting samples from the posterior
+
+posterior.samples.of.mean <- rep(NA,100000);
+loglike.samples.of.mean <- rep(NA,100000);
+
+# start by a point at random (we will take a point very far away from the correct mean)
+posterior.samples.of.mean[1] <- rnorm(1,-5,1);
+loglike.samples.of.mean[1] <- loglike(posterior.samples.of.mean[1]);
+
+for(it in 2:length(posterior.samples.of.mean))
+{
+  v <- metropolis(posterior.samples.of.mean[it-1]);
+  posterior.samples.of.mean[it] <- v[1];
+  loglike.samples.of.mean[it] <- v[2];
+}
+
+plot(posterior.samples.of.mean, type = "l");
+plot(loglike.samples.of.mean, type = "l");
+
+# lets check the level of autocorrelation
+
+acf(posterior.samples.of.mean);
+
+# posterior must pick unrelated samples. Remove the first n samples (as we initialize the MCMC at a position at random). Add the lag to remove the autocorrelation
+
+posterior <- posterior.samples.of.mean[seq(from=5000, to = length(posterior.samples.of.mean),by=10)];
+
+hist(posterior);
+mean(posterior);
+median(posterior);
+# ...
+
+```
+
+# Exercise 9. Testing by means of a Permutation Monte Carlo test
+
+Imagine that we have two different datasets, A and B, and we want to test if the differences we observe of the median between the two datasets are due to sampling variance. How would you do it?
+
+Null hypothesis: MedianA == MedianB
+Alternative hypothesis: MedianA!=MedianB
+
+Or, in other way
+
+Null hypothesis: |MedianA - MedianB| == 0
+Alternative hypothesis: |MedianA - MedianB| != 0
+
+If we know the theoretical null distribution of the test statistic, we can compute how extreme our observation is.
+
+The Student's t distribution arises when comparing sample means standardized by an estimate of their standard error. What if the variable does not have a known distribution?
+
+1) If both datasets come from the same source, differences in the median are just byproduct of the sampling process that generated A and B. Observations in A and B should be exchangeables.
+
+2) From these exchanged datasets, the median should be similar to the observed with the real samples.
+
+3) Solution: resampling without replacement
+
+```{r}
+rm(list=ls())
+
+test.f <- function(a,b)
+{
+  abs(median(a)-median(b))
+}
+
+a <- rbeta(100,1,2)
+b <- rbeta(100,1,2)
+
+obs_diff_median <- test.f(a,b)
+
+mc_diff_median <- rep(NA, 100000)
+
+ab <- c(a,b)
+
+for(rep in 1:length(mc_diff_median))
+{
+  sam <- sample(length(ab), length(ab), replace=FALSE)
+
+  asam <- ab[sam[1:length(a)]]
+  bsam <- ab[sam[(length(a)+1):length(ab)]]
+
+  mc_diff_median[rep] <- test.f(asam, bsam)
+}
+
+hist(mc_diff_median)
+
+mean(mc_diff_median >= obs_diff_median)
+
+```
+
+Notice that the distribution is not Normal (should be that expected?)
+
+# Exercise 10. Estimating genetic differentiation
+
+Imagine you have two samples of sample size 50 and 100 chromosomes. For the first sample, the frequency of allele A is 0.5. For the second sample, the frequency of allele A is 0.3. Are the two samples from the same population? How would you test this? Discuss it with colleagues given what we have discussed so far.
+
+Permutations
+```{r}
+rm(list=ls());
+na <- 50;
+nb <- 100;
+fa <- 0.5;
+fb <- 0.3;
+yt <- fa*na + fb*nb;
+ot <- rep(0, na+nb);
+ot[1:yt] <- 1;
+# Prevosti distance
+pd <- abs(fa-fb);
+
+null.distribution.same.pop <- rep(NA, 10000);
+
+for(i in 1:length(null.distribution.same.pop))
+{
+  sam <- sample(length(ot), length(ot), replace=FALSE)
+  asam <- sum(ot[sam[1:na]])/na;
+  bsam <- sum(ot[sam[11:length(ot)]])/nb;
+  null.distribution.same.pop[i] <- abs(asam - bsam);
+}
+hist(null.distribution.same.pop);
+pvalue <- mean(pd <= null.distribution.same.pop);
+pvalue;
+
+```
+
+
+# Exercise 11. HWE test
+
+Suppose the counts are:
+
+nAA=30
+nAa=50
+naa=20
+
+with N=100
+
+Questions
+
+Estimate p^\hat and q^\hat.
+
+Compute expected genotype counts under HWE.
+
+Compute the chi-square test statistic
+
+χ2=∑(Oi−Ei)2/Ei2 =
+
+Using 1 degree of freedom, test whether this locus departs from HWE.
+
+Interpret the result biologically.
+
+```{r}
+
+obs <- c(30, 50, 20)
+N <- sum(obs)
+p <- (2*obs[1] + obs[2]) / (2*N)
+q <- 1 - p
+exp <- c(N*p^2, N*2*p*q, N*q^2)
+chisq <- sum((obs - exp)^2 / exp)
+pval <- pchisq(chisq, df = 1, lower.tail = FALSE)
+c(chisq = chisq, pval = pval)
+```
+
+Problem when we have cells with few observations (because the Normal approximation is not working anymore!). One way is Monte Carlo
+
+```{r}
+obs <- c(30, 50, 20)
+N <- sum(obs)
+nA <- 2*obs[1] + obs[2]
+H_obs <- obs[2]
+
+set.seed(123)
+B <- 10000
+H_sim <- numeric(B)
+
+for (b in 1:B) {
+  alleles <- c(rep("A", nA), rep("a", 2*N - nA))
+  alleles <- sample(alleles)
+  pairs <- matrix(alleles, ncol = 2, byrow = TRUE)
+  geno <- apply(pairs, 1, function(x) paste(sort(x), collapse = ""))
+  H_sim[b] <- sum(geno == "Aa")
+}
+
+# Two-sided Monte Carlo p-value based on distance from expected heterozygosity
+p_hat <- nA / (2*N)
+H_exp <- 2*N*p_hat*(1-p_hat)
+
+T_obs <- abs(H_obs - H_exp)
+T_sim <- abs(H_sim - H_exp)
+
+p_mc <- (sum(T_sim >= T_obs) + 1) / (B + 1)
+
+c(H_obs = H_obs, H_exp = H_exp, p_mc = p_mc)
+
+```
+
+Exact HWE (doi: 10.1086/510257).
+
+Because N, NA, and NB are all fixed, the only random genotype is the number of heterozygotes, 
+
+P(NAB = x) = N!NA!NB!/(2N)!*2^x/(((NA-x)/2)!*x!*(N-(NA+x)/2)!)! 
+
+An exact P value is computed by summing values from the equation over all values of x that generate probabilities equal to or smaller than do the observed number of genotypes, NAB.
+When NA is odd, the possible values of x are 1, 3, …, NA, and, when NA is even, the possible values of x are 0, 2, …, NA
+
+```{r}
+obs <- c(30, 50, 20)   # NAA, NAB, NBB
+N   <- sum(obs)
+nA  <- 2*obs[1] + obs[2]
+nB  <- 2*obs[3] + obs[2]
+
+# log-probability of observing x heterozygotes given N, nA, nB
+logp_HWE <- function(x, N, nA, nB) {
+  # invalid configurations
+  if (x < 0 || x > min(nA, nB)) return(-Inf)
+  if ((nA - x) %% 2 != 0) return(-Inf)
+  if ((nB - x) %% 2 != 0) return(-Inf)
+
+  lfactorial(N) + lfactorial(nA) + lfactorial(nB) - lfactorial(2*N) +
+    x*log(2) -
+    lfactorial((nA - x)/2) -
+    lfactorial(x) -
+    lfactorial((nB - x)/2)
+}
+
+# possible heterozygote counts
+xvals <- seq(from = nA %% 2, to = min(nA, nB), by = 2)
+
+# probabilities
+logps <- sapply(xvals, logp_HWE, N = N, nA = nA, nB = nB)
+ps <- exp(logps)
+
+# observed probability
+pobs <- exp(logp_HWE(obs[2], N, nA, nB))
+
+# exact p-value: sum of probabilities <= observed probability
+p_exact <- sum(ps[ps <= pobs + 1e-15])
+
+p_exact
+```
+
+
